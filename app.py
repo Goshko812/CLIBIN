@@ -1,4 +1,7 @@
-from flask import Flask, request, redirect, send_file, abort
+from pygments import highlight
+from pygments.lexers import guess_lexer, get_lexer_by_name
+from pygments.formatters import HtmlFormatter
+from flask import Flask, request, redirect, send_file, abort, render_template_string
 import os
 import uuid
 import time
@@ -36,6 +39,7 @@ SYNOPSIS
 
 DESCRIPTION
     add ?<hl> to resulting url for line numbers and syntax highlighting.
+    add ?<hl>=language to specify language syntax
 
 EXAMPLES
     ~$ cat hello-world.c | curl -F 'clibin=<-' https://example.com
@@ -80,6 +84,45 @@ def index():
 def retrieve(paste_id):
     if not re.match(r"^[a-zA-Z0-9_-]{1,10}$", paste_id):
         return abort(400)
+    
+    file_path = os.path.join(DATA_DIR, paste_id)
+    if not os.path.exists(file_path):
+        return abort(404)
+    
+    with open(file_path, "r") as f:
+        paste_content = f.read()
+    
+    highlight_requested = request.args.get("hl")
+    if highlight_requested is not None:
+        try:
+            lexer = get_lexer_by_name(highlight_requested) if highlight_requested else guess_lexer(paste_content)
+        except:
+            lexer = guess_lexer(paste_content)
+        
+        formatter = HtmlFormatter(style="monokai", linenos=True)
+        highlighted_code = highlight(paste_content, lexer, formatter)
+        style = formatter.get_style_defs(".highlight")  # Get CSS separately
+        
+        return render_template_string(
+            """<!DOCTYPE html>
+            <html>
+                <head>
+                    <style>
+                        {{ style | safe }}
+                        .highlight pre { color: white; }
+                        .highlight .lineno { color: white !important; text-align: right; padding-right: 10px; }
+                        .highlight table { width: 100%; border-spacing: 0; }
+                        .highlight td { padding: 5px; }
+                    </style>
+                </head>
+                <body>
+                    {{ code | safe }}
+                </body>
+            </html>""",
+            code=highlighted_code,
+            style=style
+        )
+    return send_file(file_path, mimetype="text/plain")
     
     file_path = os.path.join(DATA_DIR, paste_id)
     if not os.path.exists(file_path):
