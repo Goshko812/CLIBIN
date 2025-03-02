@@ -42,7 +42,7 @@ CLIBIN is a lightweight, Docker-based command line pastebin service inspired by 
    docker-compose up -d
    ```
 
-4. The service will be available at `http://localhost:5000`
+4. The service will be available at `http://localhost:5000` or `http://<your-IP>:5000`
 
 ### Production Deployment with NGINX
 
