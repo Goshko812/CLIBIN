@@ -9,6 +9,8 @@ CLIBIN is a lightweight, Docker-based command line pastebin service inspired by 
 - **Automatic Cleanup**: 24-hour retention with automatic deletion of expired pastes
 - **Rate Limiting**: Prevents abuse with a limit of 10 requests per minute
 - **Syntax Highlighting**: Add `?hl` to any paste URL for line numbers and syntax highlighting
+- **Expiration Control**: Set a custom expiration time with `?expires=<seconds>`
+- **Self-Destructing Pastes**: Use `?onetime=true` to make a paste expire after one view
 - **Docker-Ready**: Easy deployment with Docker and Docker Compose
 - **Size Limits**: 100KB per paste to ensure service stability
 - **Self-Hosted**: Full control over your data and service
@@ -51,10 +53,10 @@ For a production environment, it's recommended to use NGINX as a reverse proxy. 
 ```nginx
 server {
     listen 80;
-    server_name example.com;
+    server_name your-domain.com;
 
     location / {
-        proxy_pass http://localhost:5000;
+        proxy_pass http://127.0.0.1:5000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -64,7 +66,7 @@ server {
 ```
 
 Remember to:
-1. Replace `example.com` with your actual domain
+1. Replace `your-domain.com` with your actual domain
 2. Obtain SSL certificates (e.g., using Let's Encrypt)
 
 ## Usage
@@ -90,6 +92,26 @@ For syntax highlighting and line numbers, add `?hl` to the end of the URL:
 ```
 https://your-domain.com/AbCdEf?hl
 ```
+
+### Expiration Control
+
+Set a custom expiration time using `?expires=<seconds>`:
+
+```
+echo "Temporary paste" | curl -F 'clibin=<-' "https://your-domain.com?expires=60"
+```
+
+The paste will expire after 60 seconds.
+
+### Self-Destructing Pastes
+
+Make a paste expire after one view using `?onetime=true`:
+
+```
+echo "Secret Message" | curl -F 'clibin=<-' "https://your-domain.com?onetime=true"
+```
+
+The paste will be deleted immediately after being accessed once.
 
 ### Helper Function
 
