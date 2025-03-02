@@ -83,7 +83,7 @@ The service will return a URL where your content can be accessed:
 https://your-domain.com/AbCdEf
 ```
 
-### Syntax Highlighting (Not yet implemented)
+### Syntax Highlighting
 
 For syntax highlighting and line numbers, add `?hl` to the end of the URL:
 
